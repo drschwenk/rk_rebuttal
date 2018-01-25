@@ -1,0 +1,164 @@
+<html>
+  <head>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/json3/3.3.2/json3.min.js'></script>
+    <!-- end of required libraries -->
+    <script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js'></script>
+    <link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css' rel='stylesheet'>
+    <style>
+    htitle {font-size: 25px; font-weight: 400; color: #dd0000;}
+    header {font-size: 22px; font-weight: 400; color: #555555;}
+    note {font-size: 22px; font-weight: 400; color: #dd0000;}
+    answer {font-size: 20px; font-weight: 400; color: #000000;}
+    badanswer {font-size: 20px; font-weight: 400; color: #ff0000;}
+    goodanswer {font-size: 20px; font-weight: 400; color: #00dd00;}
+    char {font-size: 20px; font-weight: 400; color: #0000dd;}
+    timew {font-size: 20px; font-weight: 400; color: #00ddff;}
+    obj {font-size: 20px; font-weight: 400; color: #ff00dd;}
+    tab1 { padding-left: 2em; }
+      textarea {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        font-size: 16pt!important;
+		 width: 180px!important;
+ 		 height: 45px!important;
+      }
+      #button-div {
+        margin-bottom: 10px;
+      }
+      #counter {
+        margin: 0 10px;
+        font-size: 20pt;
+        font-weight: bold;
+      }
+      img {
+        height: 200px;
+      }
+      img{border:solid 1px red; margin:10px;}
+        .selected{
+         box-shadow:0px 12px 22px 1px #333;
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <htitle>Which Image best matches the source image?</htitle>
+      <!--<header>Examples:</header>-->
+      <!--<header><tab1><i>kitchen , bedroom , living room , park , dining room , playground , classroom , quarry , road , doorway , car , etc. </i></tab1></header>-->
+      <!--<note>Answer the question in 1 to 2 words</note>-->
+      <!--<h3>-->
+      <!--<a href='https://s3-us-west-2.amazonaws.com//ai2-vision-animation-gan/annotation_data/interface_elems/instructions_stage_3/stage_3a_inst.html' target="_blank">-->
+        <!--Watch examples here</a>-->
+      <!--</h3>-->
+    <p>&nbsp;</p>
+
+    <div class='container-fluid'>
+      <div class='row' style='float: left; width: 50%;'>
+        <div class='col-lg-4 text-center'>
+          <div class='centerBlock'>
+          <div id='image-container'>
+          </div>
+          </div>
+          <br>
+        </div>
+      </div>
+      <div class='row' style='float: right; width: 50%;'>
+        <div class='col-lg-4 text-center'>
+          {% include 'simpleamt.html' %}
+         </div>
+      </div>
+    </div>
+    <hr>
+      <div class="row">
+        <img id='{{image_url}}' src='{{image_url}}' onclick=record_value()>
+        <img src='{{image_url}}'>
+        <img src='{{image_url}}'>
+      </div>
+  </div>
+
+    <script>
+        // Define some default input.
+        var DEFAULT_INPUT = [
+        '{{image_url}}'
+        ];
+
+        var input = null;
+
+        document.getElementById('{{image_url}}').onclick = function() {
+              descriptions.push(this.id);
+        };
+
+        // Descriptions of images, parallel to input.
+        var descriptions = [];
+
+        // Some variables to track state of the HIT.
+        var idx = 0;
+        var enabled = false;
+
+        function main() {
+          // If this is a HIT on AMT, then replace the default input with the real input.
+          input = simpleamt.getInput(DEFAULT_INPUT);
+
+          // Enable the UI if the HIT is not in preview mode.
+          if (!simpleamt.isPreview()) {
+            enable_hit();
+          }
+
+          // Set up the descriptions.
+          _.each(input, function() { descriptions.push(''); });
+
+          // Preload all images
+          var imgs = [];
+          _.each(input, function(img_url) {
+            var img = new Image();
+            img.onload = function() { console.log('loaded image from ' + img_url); };
+            img.src = img_url;
+          });
+
+          render();
+        }
+
+        // Use the current index to update the image and description
+        function render() {
+          // Set up the image
+          $('#image-container').empty();
+          $('<img>').attr('src', input[idx]).appendTo($('#image-container'));
+
+          // Set up the text area
+          $('#setting').val(descriptions[0]);
+        }
+
+        // Enable the UI.
+        function enable_hit() {
+          enabled = true;
+
+          // Enable components
+          <!--$('#next-btn').click(function() { set_idx(idx + 1) });-->
+          <!--$('#prev-btn').click(function() { set_idx(idx - 1) });-->
+          $('#setting').prop('disabled', false);
+          $('#submit-btn').prop('disabled', false);
+
+          // Set up submit handler.
+          simpleamt.setupSubmit();
+          $('#submit-btn').click(function() {
+          console.log(descriptions);
+          if (descriptions.length < 1) {
+              alert('select a best image before submitting');
+              return false;
+            }
+
+            var output = {'image_url': input[0], 'description': descriptions.pop()}
+            console.log(output);
+            simpleamt.setOutput(output);
+          });
+          $('img').click(function(){
+            $('.selected').removeClass('selected'); // removes the previous selected class
+             $(this).addClass('selected'); // adds the class to the clicked image
+        });
+        }
+        main();
+    </script>
+  </body>
+</html>
