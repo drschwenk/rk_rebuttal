@@ -44,7 +44,7 @@
   </head>
   <body>
     <div class='container'>
-      <htitle>Which Image best matches the source image?</htitle>
+      <htitle>Which image best matches the source image?</htitle>
       <!--<header>Examples:</header>-->
       <!--<header><tab1><i>kitchen , bedroom , living room , park , dining room , playground , classroom , quarry , road , doorway , car , etc. </i></tab1></header>-->
       <!--<note>Answer the question in 1 to 2 words</note>-->
@@ -56,37 +56,42 @@
 
     <div class='container-fluid'>
       <div class='row' style='float: left; width: 50%;'>
-        <div class='col-lg-4 text-center'>
-          <div class='centerBlock'>
+        <h3>Source image:</h3>
           <div id='image-container'>
           </div>
-          </div>
-          <br>
-        </div>
       </div>
-      <div class='row' style='float: right; width: 50%;'>
+      <div class='row' style='float: bottom; width: 50%;'>
         <div class='col-lg-4 text-center'>
           {% include 'simpleamt.html' %}
          </div>
       </div>
     </div>
     <hr>
+      <h4>Among the three images shown below choose the one that is most similar to the top image.</h4>
+      <h4>You can select an image by clicking on it, and then clicking the submit button.</h4>
+      <h4>Make sure to pay attention to the details when choosing the most similar image.</h4>
       <div class="row">
-        <img id='{{image_url}}' src='{{image_url}}' onclick=record_value()>
-        <img src='{{image_url}}'>
-        <img src='{{image_url}}'>
+        <img id='{{method1}}' src='{{s3_uri_base}}{{method1}}/{{image_url}}'>
+        <img id='{{method2}}' src='{{s3_uri_base}}{{method2}}/{{image_url}}'>
+        <img id='{{method3}}' src='{{s3_uri_base}}{{method3}}/{{image_url}}'>
       </div>
   </div>
 
     <script>
         // Define some default input.
         var DEFAULT_INPUT = [
-        '{{image_url}}'
+        '{{s3_uri_base}}groundtruth/{{image_url}}'
         ];
 
         var input = null;
 
-        document.getElementById('{{image_url}}').onclick = function() {
+        document.getElementById('{{method1}}').onclick = function() {
+              descriptions.push(this.id);
+        };
+        document.getElementById('{{method2}}').onclick = function() {
+              descriptions.push(this.id);
+        };
+        document.getElementById('{{method3}}').onclick = function() {
               descriptions.push(this.id);
         };
 
@@ -107,7 +112,6 @@
           }
 
           // Set up the descriptions.
-          _.each(input, function() { descriptions.push(''); });
 
           // Preload all images
           var imgs = [];
@@ -149,7 +153,7 @@
               return false;
             }
 
-            var output = {'image_url': input[0], 'description': descriptions.pop()}
+            var output = {'image_url': input[0], 'selected_image': descriptions.pop()}
             console.log(output);
             simpleamt.setOutput(output);
           });
